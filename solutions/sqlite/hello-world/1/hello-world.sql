@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS hello_world;
+
+CREATE TABLE hello_world (
+  greeting TEXT
+);
+
+INSERT INTO hello_world (greeting) VALUES ('Hello, World!');
+
+SELECT greeting FROM hello_world;
