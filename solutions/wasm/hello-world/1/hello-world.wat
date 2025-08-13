@@ -1,0 +1,15 @@
+(module
+  (memory (export "mem") 1)
+
+  ;; Initializes the WebAssembly Linear Memory with a UTF-8 string of 13 characters starting at offset 64
+  (data (i32.const 64) "Hello, World!")
+  
+  ;;
+  ;; Return a greeting
+  ;;
+  ;; @returns {(i32, i32)} The offset and length of the greeting
+  (func (export "hello") (result i32 i32)
+    (i32.const 64)   ;; offset
+    (i32.const 13)   ;; correct length of "Hello, World!"
+  )
+)
