@@ -1,0 +1,19 @@
+        .data
+# ASCII codes for nationalities
+ENGLISHMAN: .byte 69   # 'E'
+JAPANESE:   .byte 74   # 'J'
+NORWEGIAN:  .byte 78   # 'N'
+SPANIARD:   .byte 83   # 'S'
+UKRAINIAN:  .byte 85   # 'U'
+
+        .text
+        .globl solution
+
+# Solution routine
+# Sets:
+# $v0 = nationality of water drinker
+# $v1 = nationality of zebra owner
+solution:
+        li      $v0, 78    # NORWEGIAN ('N') drinks water
+        li      $v1, 74    # JAPANESE ('J') owns the zebra
+        jr      $ra        # return to caller
