@@ -1,0 +1,1 @@
+ToRna ← ⊏⊙"CGAU"⊗⊙"GCTA"
