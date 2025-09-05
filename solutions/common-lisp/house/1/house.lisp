@@ -1,0 +1,22 @@
+(defpackage :house
+  (:use :cl)
+  (:export :recite))
+(in-package :house)
+(let ((lines '(("house" "Jack built.")
+               ("malt" "lay in")
+               ("rat" "ate")
+               ("cat" "killed")
+               ("dog" "worried")
+               ("cow with the crumpled horn" "tossed")
+               ("maiden all forlorn" "milked")
+               ("man all tattered and torn" "kissed")
+               ("priest all shaven and shorn" "married")
+               ("rooster that crowed in the morn" "woke")
+               ("farmer sowing his corn" "kept")
+               ("horse and the hound and the horn" "belonged to"))))
+  (defun verse (n &aux (parts (nreverse (subseq lines 0 n))))
+    (format nil "This is ~{~{the ~a that ~a~}~^ ~}" parts)))
+(defun recite (start end)
+  (loop for i from start to end
+        collect (verse i) into verses
+        finally (return (format nil "~{~a~^~%~}" verses))))
