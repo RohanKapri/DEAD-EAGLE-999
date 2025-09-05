@@ -1,0 +1,5 @@
+Valid         ← ×⊃(>0/+|≤⊃(/+↙2|⊣)⍆)
+CheckSides!   ← ×⊃(Valid|^0⧻◴)
+IsEquilateral ← CheckSides!(=1)
+IsIsosceles   ← CheckSides!(≤2)
+IsScalene     ← CheckSides!(=3)
