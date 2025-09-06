@@ -1,0 +1,57 @@
+;; For my Shree DR.MDD
+(module
+  (memory (export "mem") 1)
+  
+  (global $ongoing i32 (i32.const 0))
+  (global $draw i32 (i32.const 1))
+  (global $win i32 (i32.const 2))
+  (global $xtwice i32 (i32.const -1))
+  (global $ostarted i32 (i32.const -2))
+  (global $movedafterwon i32 (i32.const -3))
+
+  (global $X i32 (i32.const 88))
+  (global $O i32 (i32.const 79))
+  
+  (global $length i32 (i32.const 18))
+  (global $doublewins i32 (i32.const 8))
+  (data (i32.const 0) "\00\07\70\00\07\00\44\04\22\02\11\01\21\04\24\01\44\07\11\07\17\01\47\04\22\07\74\04\27\02\71\01\72\02\25\05")
+
+  (func (export "gamestate") (param $bufPtr i32) (param $bufLen i32) (result i32)
+    (local $maskX i32)
+    (local $maskO i32)
+    (local $cellVal i32)
+    (local $idx i32)
+    (local $moveGap i32)
+    (local $scoreCount i32)
+    (loop $scanBoard
+      (local.set $cellVal (i32.load8_u (i32.add (local.get $bufPtr) (local.get $idx))))
+      (if (i32.eq (local.get $cellVal) (global.get $X)) 
+        (then (local.set $maskX (i32.or (local.get $maskX) (i32.shl (i32.const 1) (local.get $idx))))))
+      (if (i32.eq (local.get $cellVal) (global.get $O)) 
+        (then (local.set $maskO (i32.or (local.get $maskO) (i32.shl (i32.const 1) (local.get $idx))))))
+      (local.set $idx (i32.add (local.get $idx) (i32.const 1)))
+      (br_if $scanBoard (i32.lt_u (local.get $idx) (local.get $bufLen)))
+    )
+    (local.set $moveGap (i32.sub (i32.popcnt (local.get $maskX)) (i32.popcnt (local.get $maskO))))
+    (if (i32.gt_s (local.get $moveGap) (i32.const 1)) (then (return (global.get $xtwice))))
+    (if (i32.lt_s (local.get $moveGap) (i32.const 0)) (then (return (global.get $ostarted))))
+    (local.set $idx (i32.const 0))
+    (loop $checkWins
+      (local.set $cellVal (i32.load16_u (i32.shl (local.get $idx) (i32.const 1))))
+      (if (i32.or (i32.eq (i32.and (local.get $maskX) (local.get $cellVal)) (local.get $cellVal))
+                  (i32.eq (i32.and (local.get $maskO) (local.get $cellVal)) (local.get $cellVal)))
+        (then
+          (local.set $scoreCount 
+            (i32.add (local.get $scoreCount) 
+              (select (i32.const 1) (i32.const -1) 
+                (i32.lt_u (local.get $idx) (global.get $doublewins)))))))
+      (local.set $idx (i32.add (local.get $idx) (i32.const 1)))
+      (br_if $checkWins (i32.lt_u (local.get $idx) (global.get $length)))
+    )
+    (if (i32.gt_u (local.get $scoreCount) (i32.const 1)) (then (return (global.get $movedafterwon))))
+    (if (i32.eq (local.get $scoreCount) (i32.const 1)) (then (return (global.get $win))))
+    (if (i32.eq (i32.add (i32.popcnt (local.get $maskX)) (i32.popcnt (local.get $maskO))) (i32.const 9)) 
+      (then (return (global.get $draw))))
+    (global.get $ongoing)
+  )
+)
