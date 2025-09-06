@@ -1,0 +1,10 @@
+#lang racket
+(provide nucleotide-counts)
+(define (nucleotide-counts nucleotides)
+  (define valid-nucleotides '(#\A #\C #\G #\T))
+  (unless (andmap (lambda (n) (member n valid-nucleotides)) (string->list nucleotides))
+    (error "Invalid DNA sequence: contains invalid nucleotides"))
+  (define (count-nucleotide nucleotide)
+    (count (lambda (n) (char=? n nucleotide)) (string->list nucleotides)))
+  (map (lambda (nucleotide) (cons nucleotide (count-nucleotide nucleotide)))
+       valid-nucleotides))
