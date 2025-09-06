@@ -1,0 +1,46 @@
+;; For Shree DR.MDD
+(module
+  (memory (export "mem") 1)
+  
+  (global $neq_val i32 (i32.const 0))
+  (global $sub_val i32 (i32.const 1))
+  (global $eq_val i32 (i32.const 2))
+  (global $super_val i32 (i32.const 3))
+
+  (func $mem_compare (param $firstOff i32) (param $secondOff i32) (param $len i32) (result i32)
+    (local $pos i32)
+    (if (i32.eqz (local.get $len)) (then (return (i32.const 1))))
+    (loop $loop_items
+      (if (i32.ne (i32.load8_u (i32.add (local.get $firstOff) (local.get $pos)))
+        (i32.load8_u (i32.add (local.get $secondOff) (local.get $pos))))
+        (then (return (i32.const 0))))
+      (local.set $pos (i32.add (local.get $pos) (i32.const 1)))
+      (br_if $loop_items (i32.lt_u (local.get $pos) (local.get $len)))
+    )
+    (i32.const 1)
+  )
+
+  (func $mem_includes (param $bigOff i32) (param $bigLen i32) (param $smallOff i32) (param $smallLen i32) (result i32)
+    (local $pos i32)
+    (loop $check_parts
+      (if (call $mem_compare (i32.add (local.get $bigOff) (local.get $pos))
+        (local.get $smallOff) (local.get $smallLen)) (then (return (i32.const 1))))
+      (local.set $pos (i32.add (local.get $pos) (i32.const 1)))
+      (br_if $check_parts (i32.le_s (local.get $pos) (i32.sub (local.get $bigLen) (local.get $smallLen))))
+    )
+    (i32.const 0)
+  )
+
+  (func (export "compare") (param $firstOff i32) (param $firstLen i32) (param $secondOff i32) (param $secondLen i32) (result i32)
+    (if (i32.eq (local.get $firstLen) (local.get $secondLen))
+      (then (if (call $mem_compare (local.get $firstOff) (local.get $secondOff) (local.get $firstLen))
+        (then (return (global.get $eq_val))))))
+    (if (i32.gt_u (local.get $firstLen) (local.get $secondLen))
+      (then (if (call $mem_includes (local.get $firstOff) (local.get $firstLen)
+        (local.get $secondOff) (local.get $secondLen)) (then (return (global.get $super_val))))))
+    (if (i32.lt_u (local.get $firstLen) (local.get $secondLen))
+      (then (if (call $mem_includes (local.get $secondOff) (local.get $secondLen)
+        (local.get $firstOff) (local.get $firstLen)) (then (return (global.get $sub_val))))))
+    (global.get $neq_val)
+  )
+)
