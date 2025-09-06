@@ -1,0 +1,16 @@
+#lang racket
+(provide to-roman)
+(define (to-roman number)
+  (let loop ((number number) (result "") (mappings (list (cons 1000 "M") (cons 900 "CM")
+                                                          (cons 500 "D") (cons 400 "CD")
+                                                          (cons 100 "C") (cons 90 "XC")
+                                                          (cons 50 "L") (cons 40 "XL")
+                                                          (cons 10 "X") (cons 9 "IX")
+                                                          (cons 5 "V") (cons 4 "IV")
+                                                          (cons 1 "I"))))
+    (if (zero? number)
+        result
+        (let ((pair (car mappings)))
+          (if (>= number (car pair))
+              (loop (- number (car pair)) (string-append result (cdr pair)) mappings)
+              (loop number result (cdr mappings)))))))
