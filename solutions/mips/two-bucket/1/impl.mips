@@ -1,0 +1,80 @@
+.globl measure
+
+measure:
+        li      $t1, 1                  # constant 1 for increments
+        lw      $t3, 0($a0)             # bucket 1 capacity
+        lw      $t4, 4($a0)             # bucket 2 capacity
+
+        move    $t6, $t3                # temp for GCD
+        move    $t7, $t4
+
+gcd_loop:
+        move    $t5, $t6
+        move    $t6, $t7
+        rem     $t7, $t5, $t6
+        bnez    $t7, gcd_loop           # repeat until remainder = 0
+
+        remu    $t7, $a2, $t6           # target volume mod GCD
+        bnez    $t7, not_possible       # if remainder ≠ 0, impossible
+
+        ble     $a2, $t3, possible      # target ≤ bucket1 capacity
+        ble     $a2, $t4, possible      # target ≤ bucket2 capacity
+
+not_possible:
+        li      $v0, -1                 # impossible
+        jr      $ra
+
+possible:
+        beq     $a1, $t1, start         # start bucket = 1? skip swap
+
+        # Swap buckets if starting bucket is 2
+        move    $t0, $t3
+        move    $t3, $t4
+        move    $t4, $t0
+
+start:
+        move    $t5, $t3                # fill starting bucket
+        move    $t6, $zero              # empty other bucket
+        move    $v0, $t1                # count actions
+        beq     $t5, $a2, success       # target achieved immediately
+
+        bne     $t4, $a2, loop
+        move    $t6, $t4                # fill second bucket
+        add     $v0, $v0, $t1
+        b       success
+
+loop:
+        sub     $t7, $t4, $t6           # remaining in bucket2
+        blt     $t7, $t5, fill_bucket_two
+
+        add     $t6, $t6, $t5           # pour bucket1 into bucket2
+        move    $t5, $zero
+        add     $v0, $v0, $t1
+        beq     $t6, $a2, success
+
+        move    $t5, $t3                # refill bucket1
+        add     $v0, $v0, $t1
+        b       loop
+
+fill_bucket_two:
+        move    $t6, $t4                # fill bucket2
+        sub     $t5, $t5, $t7           # reduce bucket1 by poured amount
+        add     $v0, $v0, $t1
+        beq     $t5, $a2, success
+
+        move    $t6, $zero              # empty bucket2
+        add     $v0, $v0, $t1
+        b       loop
+
+success:
+        beq     $a1, $t1, report        # swap contents back if needed
+
+        # Swap back bucket contents if start bucket was 2
+        move    $t0, $t5
+        move    $t5, $t6
+        move    $t6, $t0
+
+report:
+        sw      $t5, 0($a3)             # bucket1 final contents
+        sw      $t6, 4($a3)             # bucket2 final contents
+        jr      $ra
