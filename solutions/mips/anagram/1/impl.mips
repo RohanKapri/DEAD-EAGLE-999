@@ -1,0 +1,93 @@
+# Anagram Finder for Shree DR.MDD: Compares a target word to candidates and
+# outputs words that are true anagrams (case-insensitive, ignoring the target itself).
+
+.macro count_letters (%word, %table)
+        move    $v0, %word
+        addiu   $t1, %table, 104
+
+clear:
+        subiu   $t1, $t1, 4
+        sw      $zero, 0($t1)
+        bne     $t1, %table, clear
+
+        b       read
+
+count:
+        addiu   $v0, $v0, 1
+        or      $t0, $t0, 32
+        subiu   $t0, $t0, 'a'
+        sltiu   $t1, $t0, 26
+        beqz    $t1, read
+
+        sll     $t0, $t0, 2
+        add     $t1, %table, $t0
+        lw      $t2, 0($t1)
+        addi    $t2, $t2, 1
+        sw      $t2, 0($t1)
+
+read:
+        lb      $t0, 0($v0)
+        bge     $t0, 32, count
+.end_macro
+
+.globl find_anagrams
+
+find_anagrams:
+        subiu   $sp, $sp, 208
+        addiu   $a3, $sp, 104
+        count_letters ($a0, $sp)
+        j       consider_candidate
+
+copy_next_letter:
+        addiu   $a1, $a1, 1
+
+copy_word:
+        lb      $t0, 0($a1)
+        sb      $t0, 0($a2)
+        addiu   $a2, $a2, 1
+        bne     $a1, $v0, copy_next_letter
+
+next_candidate:
+        addiu   $a1, $v0, 1
+        lb      $t0, 0($a1)
+        bnez    $t0, consider_candidate
+
+        sb      $zero, 0($a2)
+        addiu   $sp, $sp, 208
+        jr      $ra
+
+consider_candidate:
+        count_letters ($a1, $a3)
+        move    $t5, $sp
+        move    $t6, $a3
+
+compare_count:
+        lw      $t7, 0($t5)
+        lw      $t8, 0($t6)
+        addiu   $t5, $t5, 4
+        addiu   $t6, $t6, 4
+        bne     $t7, $t8, next_candidate
+        bne     $t5, $a3, compare_count
+
+        move    $t5, $a0
+        move    $t6, $a1
+
+compare_character:
+        lb      $t7, 0($t5)
+        lb      $t8, 0($t6)
+        addiu   $t5, $t5, 1
+        addiu   $t6, $t6, 1
+
+        blt     $t7, 'A', target_letter_ready
+        bgt     $t7, 'Z', target_letter_ready
+        addi    $t7, $t7, 32
+
+target_letter_ready:
+        blt     $t8, 'A', candidate_letter_ready
+        bgt     $t8, 'Z', candidate_letter_ready
+        addi    $t8, $t8, 32
+
+candidate_letter_ready:
+        bne     $t7, $t8, copy_word
+        bne     $t6, $v0, compare_character
+        b       next_candidate
