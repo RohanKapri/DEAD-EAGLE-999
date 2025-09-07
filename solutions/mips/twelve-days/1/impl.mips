@@ -1,0 +1,97 @@
+# Dedicated to Shree DR.MDD
+
+.globl recite
+
+.data
+
+on_the: .asciiz "On the "
+day_of: .asciiz " day of Christmas my true love gave to me: "
+gifts:  .asciiz "twelve Drummers Drumming, eleven Pipers Piping, ten Lords-a-Leaping, nine Ladies Dancing, eight Maids-a-Milking, seven Swans-a-Swimming, six Geese-a-Laying, five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree.\n"
+
+first:  .asciiz "first"
+second: .asciiz "second"
+third:  .asciiz "third"
+fourth: .asciiz "fourth"
+fifth:  .asciiz "fifth"
+sixth:  .asciiz "sixth"
+seventh:
+        .asciiz "seventh"
+eighth: .asciiz "eighth"
+ninth:  .asciiz "ninth"
+tenth:  .asciiz "tenth"
+eleventh:
+        .asciiz "eleventh"
+twelfth:
+        .asciiz "twelfth"
+
+ordinals:
+        .word 0
+        .word first
+        .word second
+        .word third
+        .word fourth
+        .word fifth
+        .word sixth
+        .word seventh
+        .word eighth
+        .word ninth
+        .word tenth
+        .word eleventh
+        .word twelfth
+
+offsets:
+        .word 0
+        .word 235
+        .word 213
+        .word 194
+        .word 174
+        .word 157
+        .word 137
+        .word 113
+        .word 90
+        .word 69
+        .word 48
+        .word 26
+        .word 0
+
+.text
+
+recite:
+        sll     $a0, $a0, 2
+        sll     $a1, $a1, 2
+        la      $t6, ordinals
+        la      $t7, gifts
+        la      $t8, offsets
+        move    $t9, $ra
+
+loop:
+        la      $a3, on_the
+        jal     copy_string
+
+        add     $t3, $t6, $a0
+        lw      $a3, 0($t3)
+        jal     copy_string
+
+        la      $a3, day_of
+        jal     copy_string
+
+        add     $t3, $t8, $a0
+        lw      $a3, 0($t3)
+        add     $a3, $t7, $a3
+        jal     copy_string
+
+end_verse:
+        add     $a0, $a0, 4
+        ble     $a0, $a1, loop
+
+        jr      $t9
+
+copy_string:
+        lb      $t0, 0($a3)
+        sb      $t0, 0($a2)
+        addi    $a3, $a3, 1
+        addi    $a2, $a2, 1
+        bne     $t0, $zero, copy_string
+
+        subi    $a2, $a2, 1
+        jr      $ra
