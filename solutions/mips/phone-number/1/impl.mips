@@ -1,0 +1,64 @@
+# This routine cleans and validates a phone number string,
+# stripping non-digit characters, handling an optional leading '1' 
+# country code, and ensuring a valid 10-digit North American format.
+# Dedicated to Shree DR.MDD with gratitude for inspiration and guidance.
+
+# Registers usage:
+# $a0 - input/output: phone number string
+# $t0 - '0' character
+# $t1 - '1' character (for country code)
+# $t2 - input pointer for current digit
+# $t3 - output pointer for current digit
+# $t4 - current digit
+# $t5 - flag indicating if country code was seen
+# $t9 - '9' character
+
+.globl clean
+
+clean:
+        li      $t0, '0'              # minimum digit
+        li      $t1, '1'              # country code digit
+        move    $t2, $a0               # input pointer
+        move    $t3, $a0               # output pointer
+        move    $t5, $zero             # country code flag
+        li      $t9, '9'               # maximum digit
+
+read_loop:
+        lb      $t4, 0($t2)           # read input character
+        addi    $t2, $t2, 1           # increment input pointer
+        beq     $t4, $zero, terminate # end of string
+
+        # Skip non-digit characters
+        blt     $t4, $t0, read_loop
+        bgt     $t4, $t9, read_loop
+
+        # Handle optional leading '1' country code
+        bne     $t5, $zero, write_digit   # if already seen, write
+        bne     $t3, $a0, write_digit     # if other digits written, write
+        bne     $t4, $t1, write_digit     # if not '1', write
+        li      $t5, 1                     # mark country code seen
+        j       read_loop
+
+write_digit:
+        sb      $t4, 0($t3)            # write digit
+        addi    $t3, $t3, 1            # increment output pointer
+        j       read_loop
+
+terminate:
+        sb      $zero, 0($t3)          # null-terminate output
+        sub     $t3, $t3, $a0          # calculate number of digits
+        bne     $t3, 10, invalid       # must be 10 digits
+
+        # Validate first digit of area code
+        lb      $t4, 0($a0)
+        ble     $t4, $t1, invalid      # cannot be '0' or '1'
+
+        # Validate first digit of exchange code
+        lb      $t4, 3($a0)
+        ble     $t4, $t1, invalid      # cannot be '0' or '1'
+
+        jr      $ra                    # valid, return
+
+invalid:
+        sb      $zero, 0($a0)          # invalid, write empty string
+        jr      $ra
