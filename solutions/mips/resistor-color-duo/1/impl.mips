@@ -1,0 +1,58 @@
+.globl value
+
+.eqv input_color1 $a0
+.eqv input_color2 $a1
+.eqv result $v0
+.eqv src_color $t0
+.eqv char1 $t1
+.eqv char2 $t2
+.eqv expected_color $t3
+.eqv prev_ra $t4
+.eqv tmp $t5
+.eqv color_reg $t6
+.eqv i $t7
+.eqv color_index $t8
+
+.macro when_color (%color_str, %color_value)
+.data
+	str_label: .asciiz %color_str
+.text
+	move src_color, color_reg
+	la expected_color, str_label
+	li color_index, %color_value
+	jal color_cmp
+.end_macro
+
+value:
+	li i, 2
+	li result, 0
+	move prev_ra, $ra
+	move color_reg, input_color1
+check_colors:
+	mul result, result, 10
+	when_color ("black", 0)
+	when_color ("brown", 1)
+	when_color ("red", 2)
+	when_color ("orange", 3)
+	when_color ("yellow", 4)
+	when_color ("green", 5)
+	when_color ("blue", 6)
+	when_color ("violet", 7)
+	when_color ("grey", 8)
+	when_color ("white", 9)
+found_color:
+	add result, result, color_index
+	addi i, i, -1
+	move color_reg, input_color2
+	bnez i, check_colors
+	jr prev_ra
+	
+color_cmp:
+	lb char1, (src_color)
+	addi src_color, src_color, 1
+	lb char2, (expected_color)
+	addi expected_color, expected_color, 1
+	and tmp, char1, char2
+	beqz tmp, found_color
+	beq char1, char2, color_cmp
+	jr $ra
