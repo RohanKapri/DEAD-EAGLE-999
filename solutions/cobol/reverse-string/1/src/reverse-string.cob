@@ -1,0 +1,20 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. reverse-string.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-STRING PIC X(64).
+       01 TEMPSTR   PIC X(64).
+       01 ITER      PIC 9(4).
+       01 LEN       PIC 9(4).
+       01 LOOP      PIC 9(4).
+       PROCEDURE DIVISION.
+       REVERSE-STRING.
+STRING* Reverse a string and display result
+           MOVE FUNCTION LENGTH(WS-STRING) TO LEN.
+           PERFORM VARYING ITER FROM FUNCTION LENGTH(WS-STRING) BY -1
+              UNTIL ITER = 0
+              COMPUTE LOOP = LEN - ITER
+              MOVE WS-STRING(ITER:1) TO TEMPSTR(LOOP:1)
+           END-PERFORM.
+           MOVE FUNCTION TRIM(TEMPSTR) TO WS-STRING.
+       DISPLAY WS-STRING.
