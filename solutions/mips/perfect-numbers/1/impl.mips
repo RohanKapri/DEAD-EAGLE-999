@@ -1,0 +1,62 @@
+# Registers:
+# $a0 - input number
+# $v0 - output classification
+# $t0 - sum of proper divisors
+# $t1 - candidate factor
+# $t2 - temporary remainder
+# $t3 - temporary quotient
+
+.eqv PERFECT    1
+.eqv ABUNDANT   2
+.eqv DEFICIENT  3
+.eqv ERROR     -1
+
+.globl classify
+
+classify:
+        ble     $a0, 0, error          # Only positive integers
+        li      $t0, 0                 # sum of factors
+        li      $t1, 1                 # start from 1
+
+factor_loop:
+        mul     $t2, $t1, $t1          # t2 = t1^2
+        bgt     $t2, $a0, check_sum    # if t1^2 > n, stop factoring
+
+        div     $a0, $t1
+        mfhi    $t3
+        bnez    $t3, next_factor       # if remainder != 0, not a factor
+
+        mflo    $t3                      # t3 = a0 / t1
+
+        add     $t0, $t0, $t1           # add factor
+        bne     $t1, $t3, add_quotient  # avoid double-counting square root
+        j next_factor
+
+add_quotient:
+        add     $t0, $t0, $t3
+
+next_factor:
+        addi    $t1, $t1, 1
+        j factor_loop
+
+check_sum:
+        sub     $t0, $t0, $a0           # remove the number itself
+        beq     $t0, $a0, perfect
+        bgt     $t0, $a0, abundant
+        blt     $t0, $a0, deficient
+
+perfect:
+        li $v0, PERFECT
+        jr $ra
+
+abundant:
+        li $v0, ABUNDANT
+        jr $ra
+
+deficient:
+        li $v0, DEFICIENT
+        jr $ra
+
+error:
+        li $v0, ERROR
+        jr $ra
