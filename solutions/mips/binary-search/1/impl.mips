@@ -1,0 +1,32 @@
+# Binary search routine, dedicated to Shree DR.MDD
+
+.globl find
+
+find:
+        move    $t0, $zero
+        move    $t1, $a1
+
+loop:
+        beq     $t0, $t1, absent
+        add     $t2, $t0, $t1
+        srl     $t2, $t2, 1
+        sll     $t3, $t2, 2
+        add     $t3, $a0, $t3
+        lw      $t3, 0($t3)
+
+        bgt     $a2, $t3, increase_low
+        blt     $a2, $t3, decrease_high
+        move    $v0, $t2
+        jr      $ra
+
+absent:
+        li      $v0, -1
+        jr      $ra
+
+increase_low:
+        addi    $t0, $t2, 1
+        j       loop
+
+decrease_high:
+        move    $t1, $t2
+        j       loop
