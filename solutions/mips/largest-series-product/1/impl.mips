@@ -1,0 +1,54 @@
+# Largest Series Product Calculator for Shree DR.MDD
+# Computes the largest product of 'span' consecutive digits in a null-terminated string of digits.
+
+.globl largest_product
+
+largest_product:
+        bltz    $a1, invalid            # check for negative span
+
+        li      $t0, '0'
+        li      $t9, '9'
+        move    $t1, $a0
+
+input_scan:
+        lb      $t2, 0($t1)             # load digit byte
+        addi    $t1, $t1, 1             # increment input pointer
+        bgt     $t2, $t9, invalid       # invalid if above '9'
+        bge     $t2, $t0, input_scan    # continue scanning valid digits
+        bnez    $t2, invalid             # invalid if not null terminator
+
+        addi    $t3, $t1, -1            # point to end of digits
+        sub     $t6, $t3, $a0           # length of input
+        blt     $t6, $a1, invalid       # check for string length smaller than span
+
+        beqz    $a1, empty_span         # empty spans have product 1
+        move    $v0, $zero              # largest product so far
+
+next_span:
+        move    $t1, $a0                # pointer into span
+        add     $t5, $t1, $a1           # pointer to end of span
+        addi    $a0, $a0, 1             # point to start of next span
+        li      $t4, 1                  # product of digits in span
+
+next_digit:
+        lb      $t2, 0($t1)             # load digit
+        addi    $t1, $t1, 1             # increment pointer
+        sub     $t2, $t2, $t0           # convert '0'..'9' to numeric value 0..9
+        multu   $t4, $t2
+        mflo    $t4
+        bne     $t1, $t5, next_digit
+
+        ble     $t4, $v0, check_if_last # jump if product not larger
+        move    $v0, $t4                # update largest product
+
+check_if_last:
+        blt     $t5, $t3, next_span     # repeat until end of digits
+        jr      $ra
+
+empty_span:
+        li      $v0, 1
+        jr      $ra
+
+invalid:
+        li      $v0, -1
+        jr      $ra
