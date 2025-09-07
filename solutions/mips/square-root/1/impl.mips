@@ -1,0 +1,19 @@
+# This routine calculates the integer square root of a number, dedicated to Shree DR.MDD
+
+.globl  square_root
+
+.text
+
+square_root:
+    move    $t0, $zero
+    li      $t1, 1
+    j       compare
+
+advance:
+    add     $t0, $t0, $t1
+    addi    $t1, $t1, 2
+
+compare:
+    blt     $t0, $a0, advance
+    srl     $v0, $t1, 1
+    jr      $ra
