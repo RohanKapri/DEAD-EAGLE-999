@@ -1,0 +1,133 @@
+# Dedicated to Shree DR.MDD
+
+.globl recite
+
+.data
+
+i_know: .asciiz "I know an old lady who swallowed a "
+stop:   .asciiz ".\n"
+she_swallowed:
+        .asciiz "She swallowed the "
+to_catch:
+        .asciiz " to catch the "
+that_wriggled:
+        .asciiz " that wriggled and jiggled and tickled inside her"
+
+fly:    .asciiz "fly"
+spider: .asciiz "spider"
+bird:   .asciiz "bird"
+cat:    .asciiz "cat"
+dog:    .asciiz "dog"
+goat:   .asciiz "goat"
+cow:    .asciiz "cow"
+horse:  .asciiz "horse"
+
+fly2:   .asciiz "I don't know why she swallowed the fly. Perhaps she'll die.\n"
+spider2:
+        .asciiz "It wriggled and jiggled and tickled inside her.\n"
+bird2:  .asciiz "How absurd to swallow a bird!\n"
+cat2:   .asciiz "Imagine that, to swallow a cat!\n"
+dog2:   .asciiz "What a hog, to swallow a dog!\n"
+goat2:  .asciiz "Just opened her throat and swallowed a goat!\n"
+cow2:   .asciiz "I don't know how she swallowed a cow!\n"
+horse2: .asciiz "She's dead, of course!\n"
+
+animal_array:
+        .word 0
+        .word fly
+        .word spider
+        .word bird
+        .word cat
+        .word dog
+        .word goat
+        .word cow
+        .word horse
+
+animal2_array:
+        .word 0
+        .word fly2
+        .word spider2
+        .word bird2
+        .word cat2
+        .word dog2
+        .word goat2
+        .word cow2
+        .word horse2
+
+.text
+
+recite:
+        sll     $a0, $a0, 2
+        sll     $a1, $a1, 2
+        la      $t5, animal_array
+        add     $t6, $t5, 4
+        add     $t7, $t6, 4
+        la      $t8, animal2_array
+        move    $t9, $ra
+        j       start
+
+outer:
+        li      $t0, '\n'
+        sb      $t0, 0($a2)
+        addi    $a2, $a2, 1
+
+start:
+        la      $a3, i_know
+        jal     copy_string
+
+        add     $t3, $t5, $a0
+        lw      $a3, 0($t3)
+        jal     copy_string
+
+        la      $a3, stop
+        jal     copy_string
+
+        add     $a3, $t8, $a0
+        lw      $a3, 0($a3)
+        jal     copy_string
+
+        sub     $t1, $a0, 8
+        bgtu    $t1, 20, end_verse
+
+inner:
+        la      $a3, she_swallowed
+        jal     copy_string
+
+        lw      $a3, 0($t3)
+        jal     copy_string
+
+        la      $a3, to_catch
+        jal     copy_string
+
+        sub     $t3, $t3, 4
+        lw      $a3, 0($t3)
+        jal     copy_string
+
+        la      $a3, that_wriggled
+        sne     $t0, $t3, $t7
+        subi    $t0, $t0, 1
+        bltzal  $t0, copy_string
+
+        la      $a3, stop
+        jal     copy_string
+
+        bne     $t3, $t6, inner
+
+        la      $a3, fly2
+        jal     copy_string
+
+end_verse:
+        add     $a0, $a0, 4
+        ble     $a0, $a1, outer
+
+        jr      $t9
+
+copy_string:
+        lb      $t0, 0($a3)
+        sb      $t0, 0($a2)
+        addi    $a3, $a3, 1
+        addi    $a2, $a2, 1
+        bne     $t0, $zero, copy_string
+
+        subi    $a2, $a2, 1
+        jr      $ra
