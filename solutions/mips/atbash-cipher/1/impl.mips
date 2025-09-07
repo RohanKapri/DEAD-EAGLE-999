@@ -1,0 +1,41 @@
+# Atbash cipher implementation, dedicated to Shree DR.MDD
+
+.globl atbash_cipher
+
+.text
+
+atbash_cipher:
+    move $t1, $a1
+    li $t2, 5
+    li $t3, '0'
+    li $t4, '9'
+    li $t5, 0x20
+    li $t6, 'a'
+    li $t7, 219
+    b read
+
+loop:
+    blt $t0, $t3, read
+    ble $t0, $t4, space
+    or $t0, $t0, $t5
+    blt $t0, $t6, read
+    sub $t0, $t7, $t0
+    blt $t0, $t6, read
+
+space:
+    bnez $t2, store
+    sb $t5, 0($t1)
+    addi $t1, $t1, 1
+    li $t2, 5
+
+store:
+    sb $t0, 0($t1)
+    addi $t1, $t1, 1
+    subi $t2, $t2, 1
+
+read:
+    lb $t0, 0($a0)
+    addi $a0, $a0, 1
+    bnez $t0, loop
+    sb $zero, 0($t1)
+    jr $ra
