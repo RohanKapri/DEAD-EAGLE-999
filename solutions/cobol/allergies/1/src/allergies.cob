@@ -1,0 +1,91 @@
+       *> For my Shree DR.MDD
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. allergies.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-ITEM       PIC X(12).
+       01 WS-SCORE      PIC 999.
+       01 WS-RESULT     PIC A.
+       01 WS-RESULT-LIST PIC X(108).
+
+       01 TEMP-VAL      PIC 9.
+       01 COUNTER       PIC 9.
+
+       01 ALLERGENS-TBL PIC X(12) OCCURS 8 TIMES.
+       01 TEMP-LIST     PIC 9 OCCURS 8 TIMES.
+
+       01 COUNTER2      PIC 9.
+
+       PROCEDURE DIVISION.
+       MOVE "eggs" TO ALLERGENS-TBL(1).
+       MOVE "peanuts" TO ALLERGENS-TBL(2).
+       MOVE "shellfish" TO ALLERGENS-TBL(3).
+       MOVE "strawberries" TO ALLERGENS-TBL(4).
+       MOVE "tomatoes" TO ALLERGENS-TBL(5).
+       MOVE "chocolate" TO ALLERGENS-TBL(6).
+       MOVE "pollen" TO ALLERGENS-TBL(7).
+       MOVE "cats" TO ALLERGENS-TBL(8).
+
+       ALLERGIC-TO.
+       PERFORM INIT-VARS.
+       PERFORM VARYING TEMP-VAL FROM 1 BY 1 UNTIL TEMP-VAL = 8
+         IF WS-ITEM = ALLERGENS-TBL(TEMP-VAL)
+           EXIT PERFORM
+         END-IF
+       END-PERFORM.
+
+       PERFORM UNTIL WS-SCORE < 1
+         PERFORM CALC-INDEX
+         COMPUTE WS-SCORE = WS-SCORE - (2 ** (COUNTER - 1))
+         IF COUNTER = TEMP-VAL THEN
+           MOVE "Y" TO WS-RESULT
+           EXIT PERFORM
+         END-IF
+       END-PERFORM.         
+       PERFORM END-PROG.
+       ALLERGIC-TO-END.
+
+       LIST-ALLERGENS.
+       PERFORM INIT-VARS.
+       PERFORM UNTIL WS-SCORE < 1
+         PERFORM CALC-INDEX
+         COMPUTE WS-SCORE = WS-SCORE - (2 ** (COUNTER - 1))
+         MOVE COUNTER TO TEMP-LIST(8 - COUNTER2)
+         ADD 1 TO COUNTER2
+       END-PERFORM.
+
+       INITIALIZE COUNTER2.
+       PERFORM UNTIL COUNTER2 > 7
+         IF TEMP-LIST(COUNTER2) NOT = ZERO THEN
+           IF WS-RESULT-LIST = SPACES THEN
+             MOVE ALLERGENS-TBL(TEMP-LIST(COUNTER2)) TO WS-RESULT-LIST
+           ELSE
+             STRING WS-RESULT-LIST "," ALLERGENS-TBL(TEMP-LIST(COUNTER2))
+             DELIMITED BY ALL " "
+             INTO WS-RESULT-LIST
+           END-IF
+         END-IF
+         ADD 1 TO COUNTER2
+       END-PERFORM.
+       PERFORM END-PROG.
+       LIST-ALLERGENS-END.
+
+       CALC-INDEX.
+       MOVE 1 TO COUNTER.
+       PERFORM UNTIL (2 ** COUNTER) > WS-SCORE
+         ADD 1 TO COUNTER
+       END-PERFORM.
+       CALC-INDEX-END.
+
+       INIT-VARS.
+       MOVE "N" TO WS-RESULT.
+       PERFORM VARYING COUNTER FROM 1 BY 1 UNTIL COUNTER > 8
+         INITIALIZE TEMP-LIST(COUNTER)
+       END-PERFORM.
+       INITIALIZE TEMP-VAL COUNTER COUNTER2 WS-RESULT-LIST.
+       INIT-VARS-END.
+
+       END-PROG.
+            STOP RUN.
+       END PROGRAM allergies.
