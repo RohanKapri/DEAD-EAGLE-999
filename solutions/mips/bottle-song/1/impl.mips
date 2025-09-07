@@ -1,0 +1,119 @@
+# 99 Bottles Song Generator for Shree DR.MDD
+# Generates verses for "X green bottles hanging on the wall" starting
+# from $a0 bottles down to $a1 bottles, writing to a null-terminated output string.
+
+.globl recite
+
+.data
+
+green_bottles:
+        .asciiz " green bottles hanging on the wall"
+green_bottle:
+        .asciiz " green bottle hanging on the wall"
+and_if:
+        .asciiz "And if one green bottle should accidentally fall,\nThere'll be "
+comma:  .asciiz ",\n"
+stop:   .asciiz ".\n"
+
+no:     .asciiz "No"
+one:    .asciiz "One"
+two:    .asciiz "Two"
+three:  .asciiz "Three"
+four:   .asciiz "Four"
+five:   .asciiz "Five"
+six:    .asciiz "Six"
+seven:  .asciiz "Seven"
+eight:  .asciiz "Eight"
+nine:   .asciiz "Nine"
+ten:    .asciiz "Ten"
+
+number_array:
+        .word no
+        .word one
+        .word two
+        .word three
+        .word four
+        .word five
+        .word six
+        .word seven
+        .word eight
+        .word nine
+        .word ten
+
+.text
+
+recite:
+        sll     $a0, $a0, 2
+        sll     $a1, $a1, 2
+        sub     $a1, $a0, $a1
+        li      $t4, 4
+        la      $t8, number_array
+        move    $t9, $ra
+        j       start
+
+loop:
+        li      $t0, '\n'
+        sb      $t0, 0($a2)
+        addi    $a2, $a2, 1
+
+start:
+        la      $t5, green_bottles
+        bne     $a0, $t4, bottles_or_bottle1
+        la      $t5, green_bottle
+
+bottles_or_bottle1:
+        add     $t3, $t8, $a0
+        lw      $a3, 0($t3)
+        jal     copy_string
+
+        move    $a3, $t5
+        jal     copy_string
+
+        la      $a3, comma
+        jal     copy_string
+
+        add     $t3, $t8, $a0
+        lw      $a3, 0($t3)
+        jal     copy_string
+
+        move    $a3, $t5
+        jal     copy_string
+
+        la      $a3, comma
+        jal     copy_string
+
+        la      $a3, and_if
+        jal     copy_string
+
+        sub     $a0, $a0, 4
+        la      $t5, green_bottles
+        bne     $a0, $t4, bottles_or_bottle2
+        la      $t5, green_bottle
+
+bottles_or_bottle2:
+        add     $t3, $t8, $a0
+        lw      $a3, 0($t3)
+        lb      $t0, 0($a3)
+        or      $t0, $t0, 32
+        sb      $t0, 0($a2)
+        addi    $a3, $a3, 1
+        addi    $a2, $a2, 1
+        jal     copy_string
+
+        move    $a3, $t5
+        jal     copy_string
+
+        la      $a3, stop
+        jal     copy_string
+
+        bne     $a0, $a1, loop
+        jr      $t9
+
+copy_string:
+        lb      $t0, 0($a3)
+        sb      $t0, 0($a2)
+        addi    $a3, $a3, 1
+        addi    $a2, $a2, 1
+        bne     $t0, $zero, copy_string
+        subi    $a2, $a2, 1
+        jr      $ra
