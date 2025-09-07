@@ -1,0 +1,25 @@
+.globl reverse
+
+reverse:
+        move    $t0, $a0
+        move    $t1, $a1
+        j       end_check
+
+scan:
+        addi    $t0, $t0, 1
+
+end_check:
+        lb      $t2, 0($t0)
+        bnez    $t2, scan
+        j       begin_check
+
+copy:
+        subi    $t0, $t0, 1
+        lb      $t2, 0($t0)
+        sb      $t2, 0($t1)
+        addi    $t1, $t1, 1
+
+begin_check:
+        bne     $t0, $a0, copy
+        sb      $zero, 0($t1)
+        jr $ra
