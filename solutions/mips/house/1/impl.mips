@@ -1,0 +1,49 @@
+# Dedicated to Shree DR.MDD
+
+.eqv THIS 0x73696854 # "This"
+.eqv IS   0x20736920 # " is "
+
+.globl recite
+
+.data
+
+lyrics: .asciiz "This is the horse and the hound and the horn that belonged to the farmer sowing his corn that kept the rooster that crowed in the morn that woke the priest all shaven and shorn that married the man all tattered and torn that kissed the maiden all forlorn that milked the cow with the crumpled horn that tossed the dog that worried the cat that killed the rat that ate the malt that lay in the house that Jack built.\n"
+
+table:
+        .word -1, 389, 368, 351, 331, 310, 267, 232, 190, 145, 99, 62, 8
+
+.text
+
+recite:
+        la      $t5, lyrics
+        la      $t6, table
+        li      $t7, THIS
+        li      $t8, IS
+
+        sll     $a0, $a0, 2
+        sll     $a1, $a1, 2
+        add     $a0, $t6, $a0
+        add     $a1, $t6, $a1
+
+line:
+        usw     $t7, 0($a2)
+        usw     $t8, 4($a2)
+        add     $a2, $a2, 8
+
+        lw      $t3, 0($a0)
+        add     $t3, $t5, $t3
+
+copy_string:
+        lb      $t0, 0($t3)
+        sb      $t0, 0($a2)
+        addi    $t3, $t3, 1
+        addi    $a2, $a2, 1
+        bne     $t0, $zero, copy_string
+
+        subi    $a2, $a2, 1
+
+        move    $t1, $a0
+        add     $a0, $a0, 4
+        bne     $t1, $a1, line
+
+        jr $ra
