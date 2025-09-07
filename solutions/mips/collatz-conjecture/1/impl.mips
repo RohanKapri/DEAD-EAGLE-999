@@ -1,0 +1,27 @@
+.globl  steps
+
+steps:
+        ble     $a0, $zero, invalid
+        move    $v0, $zero
+        j       check_parity
+
+even:
+        srl     $a0, $a0, 1
+        addi    $v0, $v0, 1
+
+check_parity:
+        andi    $t0, $a0, 1
+        beqz    $t0, even
+
+        beq     $a0, 1, return
+
+        addi    $t1, $a0, 1
+        srl     $t1, $t1, 1
+        add     $a0, $a0, $t1
+        addi    $v0, $v0, 2
+        j       check_parity
+
+invalid:
+        li      $v0, -1
+return:
+        jr      $ra
