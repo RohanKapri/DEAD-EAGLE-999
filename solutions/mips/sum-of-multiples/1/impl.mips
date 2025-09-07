@@ -1,0 +1,33 @@
+# Sum multiples of factors within a limit, dedicated to Shree DR.MDD
+
+.globl sum
+
+sum:
+        move    $v0, $zero
+        beqz    $a1, return
+        sll     $t0, $a1, 2
+        add     $t0, $a0, $t0
+        move    $t1, $zero
+        j       next_candidate
+
+check_factor:
+        lw      $t3, 0($t2)
+        beqz    $t3, next_factor
+        rem     $t4, $t1, $t3
+        beqz    $t4, found_multiple
+
+next_factor:
+        addi    $t2, $t2, 4
+        bne     $t2, $t0, check_factor
+
+next_candidate:
+        addi    $t1, $t1, 1
+        move    $t2, $a0
+        blt     $t1, $a2, check_factor
+
+return:
+        jr      $ra
+
+found_multiple:
+        addu    $v0, $v0, $t1
+        j       next_candidate
