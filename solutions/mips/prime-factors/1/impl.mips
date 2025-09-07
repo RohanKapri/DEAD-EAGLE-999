@@ -1,0 +1,34 @@
+.globl factors
+
+.text
+
+factors:
+        move    $v0, $a1
+        li      $t0, 2
+        li      $t1, 1
+        j       square
+
+extract:
+        sw      $t0, 0($a1)
+        addi    $a1, $a1, 4
+        mflo    $a0
+
+divide:
+        divu    $a0, $t0
+        mfhi    $t2
+        beqz    $t2, extract
+        add     $t0, $t0, $t1
+        li      $t1, 2
+
+square:
+        multu   $t0, $t0
+        mflo    $t2
+        bleu    $t2, $a0, divide
+        beq     $a0, 1, return
+        sw      $a0, 0($a1)
+        addi    $a1, $a1, 4
+
+return:
+        sub     $v0, $a1, $v0
+        srl     $v0, $v0, 2
+        jr      $ra
