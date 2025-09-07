@@ -1,0 +1,19 @@
+.globl square
+square:
+    move $v0, $zero
+    move $v1, $zero
+    li $t0, 1
+    blt $a0, $t0, invalid_square
+    subi $a0, $a0, 1
+    li $t1, 32
+    blt $a0, $t1, low
+    sub $a0, $a0, $t1
+    blt $a0, $t1, high
+invalid_square:
+    jr $ra
+low:
+    sllv $v0, $t0, $a0
+    jr $ra
+high:
+    sllv $v1, $t0, $a0
+    jr $ra
