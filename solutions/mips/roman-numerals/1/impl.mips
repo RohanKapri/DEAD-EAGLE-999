@@ -1,0 +1,41 @@
+.macro store (%byte)
+        li      $t9, %byte
+        sb      $t9, 0($t1)
+        addi    $t1, $t1, 1
+.end_macro
+
+.macro digit (%value, %one, %value4, %value5, %five, %value9, %ten)
+        blt     $t0, %value9, l5
+        store   %one
+        store   %ten
+        sub     $t0, $t0, %value9
+        j out
+l5:
+        blt     $t0, %value5, l4
+        store   %five
+        sub     $t0, $t0, %value5
+        j       l1
+l4:
+        blt     $t0, %value4, l1
+        store   %one
+        store   %five
+        sub     $t0, $t0, %value4
+        j       out
+l1:     blt     $t0, %value, out
+        store   %one
+        sub     $t0, $t0, %value
+        j       l1
+out:
+.end_macro
+
+.globl roman
+
+roman:
+        move    $t0, $a0
+        move    $t1, $a1
+        digit   1000, 'M', 4000, 5000, 'A', 9000, 'B'
+        digit   100, 'C', 400, 500, 'D', 900, 'M'
+        digit   10, 'X', 40, 50, 'L', 90, 'C'
+        digit   1, 'I', 4, 5, 'V', 9, 'X'
+        sb      $zero, 0($t1)
+        jr      $ra
