@@ -1,0 +1,35 @@
+.globl triplets_with_sum
+
+triplets_with_sum:
+        move    $t0, $a1                # start of a values
+        blt     $a0, 2, return          # Stop immediately if N < 2
+        move    $t1, $zero              # Initialize a
+        j       increment_a
+
+check_remainder:
+        mfhi    $t5                     # remainder from division
+        bnez    $t5, increment_a        # skip if remainder ≠ 0
+        sub     $t3, $a0, $t1
+        sub     $t3, $t3, $t2           # c = N - a - b
+
+        sw      $t1, 0($a1)             # store a
+        sw      $t2, 0($a2)             # store b
+        sw      $t3, 0($a3)             # store c
+        addi    $a1, $a1, 4             # increment pointers
+        addi    $a2, $a2, 4
+        addi    $a3, $a3, 4
+
+increment_a:
+        addi    $t1, $t1, 1             # increment a
+        sub     $t7, $a0, $t1           # N - a
+        sub     $t6, $t7, $t1           # numerator step = N - 2a
+        sll     $t7, $t7, 1             # denominator = 2*(N - a)
+        mulu    $t6, $a0, $t6           # numerator = N*(N - 2a)
+        div     $t6, $t7
+        mflo    $t2                     # b = numerator / denominator
+        bgt     $t2, $t1, check_remainder # continue if b > a
+
+return:
+        sub     $v0, $a1, $t0           # compute total triplets stored
+        srl     $v0, $v0, 2             # convert bytes to count
+        jr      $ra
