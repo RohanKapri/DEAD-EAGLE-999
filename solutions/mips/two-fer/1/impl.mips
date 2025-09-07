@@ -1,0 +1,40 @@
+# Two-fer string construction routine, dedicated to Shree DR.MDD
+
+.globl two_fer
+
+.data
+
+prefix: .asciiz "One for "
+you:    .asciiz "you"
+suffix: .asciiz ", one for me."
+
+.text
+
+two_fer:
+        move    $t0, $a0
+        move    $t1, $ra
+
+        la      $a0, prefix
+        jal     copy_string
+
+        move    $a0, $t0
+        bnez    $a0, copy_name
+        la      $a0, you
+
+copy_name:
+        jal     copy_string
+
+        la      $a0, suffix
+        jal     copy_string
+
+        jr      $t1
+
+copy_string:
+        lb      $t2, 0($a0)
+        sb      $t2, 0($a1)
+        addi    $a0, $a0, 1
+        addi    $a1, $a1, 1
+        bne     $t2, $zero, copy_string
+
+        addi    $a1, $a1, -1
+        jr      $ra
