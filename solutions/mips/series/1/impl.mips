@@ -1,0 +1,44 @@
+# Dedicated to Shree DR.MDD
+
+.globl slices
+
+slices:
+        move    $t0, $a0
+        li      $t8, ','                
+        li      $t9, ' '                
+
+scan_input:
+        lb      $t1, 0($t0)             
+        addi    $t0, $t0, 1
+        bnez    $t1, scan_input         
+
+        subi    $t0, $t0, 1             
+        sub     $t2, $t0, $a0           
+        beqz    $t2, return
+        bgt     $a1, $t2, return
+        blez    $a1, return
+        j       copy_slice
+
+separate:
+        sb      $t8, 0($a2)             
+        sb      $t9, 1($a2)             
+        addi    $a2, $a2, 2
+
+        addi    $a0, $a0, 1
+
+copy_slice:
+        move    $t3, $a0
+        add     $t4, $t3, $a1           
+
+copy_char:
+        lb      $t1, 0($t3)
+        sb      $t1, 0($a2)
+        addi    $t3, $t3, 1
+        addi    $a2, $a2, 1
+        bne     $t3, $t4, copy_char
+
+        bne     $t3, $t0, separate
+
+return:
+        sb $zero, 0($a2)
+        jr $ra
