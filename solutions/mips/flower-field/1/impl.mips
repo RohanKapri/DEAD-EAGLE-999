@@ -1,0 +1,89 @@
+.globl annotate
+
+annotate:
+        move    $t0, $a0
+        lb      $t1, 0($t0)
+        beqz    $t1, return
+
+        subi    $sp, $sp, 4
+        sw      $s0, 0($sp)
+        li      $s0, '*'
+        li      $v0, '\n'
+
+find_newline:
+        lb      $t1, 0($t0)
+        addi    $t0, $t0, 1
+        bne     $t1, $v0, find_newline
+        sub     $t2, $t0, $a0
+        move    $t0, $a0
+
+find_null:
+        add     $t0, $t0, $t2
+        lb      $t1, 0($t0)
+        bnez    $t1, find_null
+        move    $t3, $t0
+
+        move    $t5, $a0
+        move    $t6, $a0
+
+next_row:
+        move    $t8, $zero
+        move    $t9, $zero
+        move    $t4, $t5
+        move    $t5, $t6
+
+        add     $t6, $t5, $t2
+        bne     $t6, $t3, first_column
+        move    $t6, $t5
+
+first_column:
+        beq     $t2, 1, write_newline
+
+next_column:
+        move    $t7, $t8
+        move    $t8, $t9
+        addi    $t9, $t8, 2
+        sne     $t9, $t9, $t2
+        add     $t9, $t8, $t9
+
+        add     $t0, $t5, $t8
+        lb      $t1, 0($t0)
+        beq     $t1, $s0, write_square
+
+        move    $v1, $zero
+        subu    $a2, $t4, $t2
+
+adjacent_row:
+        addu    $a2, $a2, $t2
+        subiu   $a3, $t7, 1
+
+adjacent_column:
+        addiu   $a3, $a3, 1
+        add     $t0, $a2, $a3
+        lb      $t1, 0($t0)
+        seq     $t0, $t1, $s0
+        add     $v1, $v1, $t0
+
+        bne     $a3, $t9, adjacent_column
+        bne     $a2, $t6, adjacent_row
+
+        li      $t1, ' '
+        beqz    $v1, write_square
+        addi    $t1, $v1, '0'
+
+write_square:
+        sb      $t1, 0($a1)
+        addi    $a1, $a1, 1
+        bne     $t8, $t9, next_column
+
+write_newline:
+        sb      $v0, 0($a1)
+        addi    $a1, $a1, 1
+        bne     $t5, $t6, next_row
+
+        lw      $s0, 0($sp)
+        addi    $sp, $sp, 4
+
+return:
+        sb      $zero, 0($a1)
+        jr      $ra
