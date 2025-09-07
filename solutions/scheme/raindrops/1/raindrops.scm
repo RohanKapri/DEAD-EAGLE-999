@@ -1,0 +1,10 @@
+(import (rnrs))
+
+(define (convert number)
+  (let ((sounds (list (if (= 0 (modulo number 3)) "Pling" "")
+                      (if (= 0 (modulo number 5)) "Plang" "")
+                      (if (= 0 (modulo number 7)) "Plong" ""))))
+    (let ((result (apply string-append sounds)))
+      (if (string=? result "")
+          (number->string number)
+          result))))
