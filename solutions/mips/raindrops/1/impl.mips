@@ -1,0 +1,91 @@
+.globl raindrops
+
+.data
+pling: .asciiz "Pling"
+plang: .asciiz "Plang"
+plong: .asciiz "Plong"
+
+.text
+
+# -------------------------
+# sound subroutine
+# Conditionally appends a sound string to output if $a0 divisible by $a2
+# a0 - input number
+# a1 - pointer to output buffer
+# a2 - factor (3,5,7)
+# a3 - pointer to sound string
+sound:
+    div $a0, $a2        # divide input by factor
+    mfhi $t0            # get remainder
+    bnez $t0, sound_done # skip if not divisible
+
+    # append sound string to output
+append_sound:
+    lb $t0, 0($a3)      # read byte from sound
+    beqz $t0, sound_done # end of string
+    sb $t0, 0($a1)      # store byte to output
+    addi $a1, $a1, 1
+    addi $a3, $a3, 1
+    j append_sound
+
+sound_done:
+    jr $ra
+
+# -------------------------
+# raindrops main routine
+# a0 - input number
+# a1 - output buffer pointer
+raindrops:
+    move $t6, $a1       # save output pointer start
+    move $t7, $ra       # save return address
+
+    # Check factors and append sounds
+    li $a2, 3
+    la $a3, pling
+    jal sound
+
+    li $a2, 5
+    la $a3, plang
+    jal sound
+
+    li $a2, 7
+    la $a3, plong
+    jal sound
+
+    sb $zero, 0($a1)    # null-terminate output
+
+    # If output was written, we are done
+    bne $a1, $t6, done
+
+    # Otherwise, output the digits of the number
+    # Store digits on stack in reverse
+    sub $sp, $sp, 16    # reserve space
+    move $t1, $sp
+    move $t2, $a0
+    li $t4, 10
+    li $t5, '0'
+
+store_digits:
+    div $t2, $t4
+    mfhi $t3
+    add $t3, $t3, $t5   # convert to ASCII
+    sb $t3, 0($t1)
+    addi $t1, $t1, 1
+    mflo $t2
+    bnez $t2, store_digits
+
+    # Copy digits from stack to output in correct order
+copy_digits:
+    subi $t1, $t1, 1
+    lb $t3, 0($t1)
+    beqz $t3, digits_done
+    sb $t3, 0($a1)
+    addi $a1, $a1, 1
+    j copy_digits
+
+digits_done:
+    addi $sp, $sp, 16   # restore stack
+
+done:
+    move $a1, $t6       # restore output pointer
+    jr $t7              # return
