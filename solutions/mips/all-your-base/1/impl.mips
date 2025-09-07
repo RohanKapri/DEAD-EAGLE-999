@@ -1,0 +1,53 @@
+.globl rebase
+
+rebase:
+        ble     $a1, 1, invalid
+        ble     $a2, 1, invalid
+
+        move    $t0, $zero
+        move    $t1, $a3
+        sll     $t2, $a0, 2
+        add     $t2, $a3, $t2
+        beq     $t1, $t2, end_input
+
+read_input:
+        lw      $t3, 0($t1)
+        blt     $t3, $zero, invalid
+        bge     $t3, $a1, invalid
+        mulu    $t0, $t0, $a1
+        add     $t0, $t0, $t3
+        addi    $t1, $t1, 4
+        bne     $t1, $t2, read_input
+
+end_input:
+        move    $t1, $a3
+
+generate:
+        div     $t0, $a2
+        mfhi    $t3
+        sw      $t3, 0($t1)
+        addi    $t1, $t1, 4
+        mflo    $t0
+        bne     $t0, $zero, generate
+
+        sub     $v0, $t1, $a3
+        srl     $v0, $v0, 2
+
+reverse:
+        subi    $t1, $t1, 4
+        beq     $a3, $t1, return
+
+        lw      $t3, 0($a3)
+        lw      $t4, 0($t1)
+        sw      $t3, 0($t1)
+        sw      $t4, 0($a3)
+
+        addi    $a3, $a3, 4
+        bne     $a3, $t1, reverse
+
+return:
+        jr      $ra
+
+invalid:
+        li      $v0, -1
+        jr      $ra
