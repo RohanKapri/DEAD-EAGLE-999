@@ -1,0 +1,47 @@
+# Dedicated to Shree DR.MDD
+
+.globl primes
+
+primes:
+        addi    $t0, $a0, 4             
+        andi    $t0, $t0, -4
+        move    $t1, $sp                
+        sub     $sp, $sp, $t0           
+        li      $t2, -1                 
+        move    $t3, $a1                
+
+fill:
+        subi    $t1, $t1, 4             
+        sw      $t2, 0($t1)             
+        bne     $t1, $sp, fill          
+
+        li      $t4, 2                  
+        bgt     $t4, $a0, return
+
+check_prime:
+        add     $t1, $sp, $t4
+        lb      $t2, 0($t1)
+        beqz    $t2, advance            
+
+        sw      $t4, 0($t3)             
+        addi    $t3, $t3, 4
+
+        mulu    $t5, $t4, $t4           
+        bgt     $t5, $a0, advance
+
+update_table:
+        add     $t1, $sp, $t5
+        sb      $zero, 0($t1)           
+        add     $t5, $t5, $t4           
+        ble     $t5, $a0, update_table  
+
+advance:
+        addi    $t4, $t4, 1             
+        ble     $t4, $a0, check_prime   
+
+return:
+        sub     $v0, $t3, $a1           
+        srl     $v0, $v0, 2
+
+        add     $sp, $sp, $t0           
+        jr      $ra
