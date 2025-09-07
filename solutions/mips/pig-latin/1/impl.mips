@@ -1,0 +1,81 @@
+.globl translate
+
+.data
+
+vowels: .ascii "a\0\0\0e\0\0\0i\0\0\0\0\0o\0\0\0\0\0u\0\0\0y\0"
+
+.text
+
+translate:
+        li      $t7, 'a'
+        li      $t8, 'y'
+        la      $t9, vowels  
+        subu    $t9, $t9, $t7
+
+start_word:
+        move    $t0, $a0
+        lb      $t4, 0($a0)
+        beqz    $t4, return
+        lb      $t5, 1($a0)
+        addu    $t6, $t9, $t4
+        lb      $t6, 0($t6)
+        bnez    $t6, check_yt
+
+check_xr:
+        bne     $t4, 'x', consonant
+        bne     $t5, 'r', consonant         
+        j       vowel
+
+check_yt:
+        bne     $t4, 'y', vowel
+        beq     $t5, 't', vowel
+
+consonant:
+        addi    $t0, $t0, 1
+        move    $t3, $t4
+        lb      $t4, 0($t0)
+        blt     $t4, $t7, vowel
+        addu    $t6, $t9, $t4
+        lb      $t6, 0($t6)
+        beqz    $t6, consonant
+        bne     $t4, 'u', vowel
+        bne     $t3, 'q', vowel
+        addi    $t0, $t0, 1
+
+vowel:
+        move    $t1, $t0
+        j       check_for_remaining_letters
+
+copy_remaining_letters:
+        addi    $t1, $t1, 1
+        sb      $t4, 0($a1)
+        addi    $a1, $a1, 1
+
+check_for_remaining_letters:
+        lb      $t4, 0($t1)
+        bge     $t4, $t7, copy_remaining_letters
+        j       check_for_leading_consonants
+
+copy_leading_consonants:
+        lb      $t5, 0($a0)
+        addi    $a0, $a0, 1
+        sb      $t5, 0($a1)
+        addi    $a1, $a1, 1
+
+check_for_leading_consonants:
+        bne     $a0, $t0, copy_leading_consonants
+
+copy_ay:
+        sb      $t7, 0($a1)
+        addi    $a1, $a1, 1
+        sb      $t8, 0($a1)
+        addi    $a1, $a1, 1
+        beqz    $t4, return
+        sb      $t4, 0($a1)
+        addi    $a1, $a1, 1
+        addi    $a0, $t1, 1
+        j       start_word
+
+return:
+        sb      $zero, 0($a1)
+        jr      $ra
