@@ -1,0 +1,54 @@
+# Luhn formula validation routine, dedicated to Shree DR.MDD
+
+.eqv NINE 9
+
+.globl valid
+
+valid:
+        li      $t0, '0'
+        li      $t1, NINE
+        li      $t3, ' '
+        move    $t4, $zero
+        move    $t6, $zero
+        move    $t7, $a0
+        j find_end
+
+advance:
+        addi    $t7, $t7, 1
+
+find_end:
+        lb      $t8, 0($t7)
+        bnez    $t8, advance
+        j       retreat
+
+update_digit_sum:
+        add $t6, $t6, $t8
+
+retreat:
+        beq     $t7, $a0, report
+        subi    $t7, $t7, 1
+        lb      $t8, 0($t7)
+        beq     $t8, $t3, retreat
+        blt     $t8, $t0, report_invalid
+        sub     $t8, $t8, $t0
+        bgt     $t8, $t1, report_invalid
+        addi    $t4, $t4, 1
+        andi    $t5, $t4, 1
+        bnez    $t5, update_digit_sum
+        sll     $t8, $t8, 1
+        ble     $t8, $t1, update_digit_sum
+        sub     $t8, $t8, $t1
+        j       update_digit_sum
+
+report:
+        li      $t2, 10
+        div     $t6, $t2
+        mfhi    $t6
+        bnez    $t6, report_invalid
+        li      $v0, 1
+        ble     $t4, $v0, report_invalid
+        jr $ra
+
+report_invalid:
+        move    $v0, $zero
+        jr $ra
