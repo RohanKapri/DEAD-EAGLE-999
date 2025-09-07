@@ -1,0 +1,62 @@
+# Triangle type detection routine, dedicated to Shree DR.MDD
+
+.globl triangle
+
+triangle:
+        subu $sp, $sp, 4
+        sw $ra, 0($sp)
+
+        jal check_triangle
+        jal check_equilateral 
+        jal check_isosceles 
+
+        li $v0, 0
+        j jump_main
+        
+        jr $ra
+
+check_equilateral: 
+        bne $a0, $a1, jump_back
+        bne $a0, $a2, jump_back
+        bne $a1, $a2, jump_back
+
+        li $v0, 2
+        j jump_main
+
+check_isosceles: 
+        li $v0, 1
+        beq $a0, $a1, jump_main
+        beq $a0, $a2, jump_main
+        beq $a1, $a2, jump_main
+
+        j jump_back
+
+check_triangle: 
+        li $v0, 3
+        
+        addu $t1, $a0, $a1
+        slt $t2, $t1, $a2
+        beq $t2, 1, jump_main
+
+        addu $t1, $a0, $a2
+        slt $t2, $t1, $a1
+        beq $t2, 1, jump_main
+
+        addu $t1, $a2, $a1
+        slt $t2, $t1, $a0
+        beq $t2, 1, jump_main
+
+        beq $a0, $zero, jump_main
+        beq $a1, $zero, jump_main
+        beq $a2, $zero, jump_main
+
+        li $v0, 0
+        j jump_back
+        
+jump_back: 
+        jr $ra
+
+jump_main: 
+        lw $ra, 0($sp)
+        addu $sp, $sp, 4
+        jr $ra
