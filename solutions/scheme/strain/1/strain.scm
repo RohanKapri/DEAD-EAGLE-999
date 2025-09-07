@@ -1,0 +1,17 @@
+(import (rnrs))
+
+(define (keep pred seq)
+  (if (null? seq)
+      '()
+      (let ((head (car seq)) (tail (cdr seq)))
+        (if (pred head)
+            (cons head (keep pred tail))
+            (keep pred tail)))))
+
+(define (discard pred seq)
+  (if (null? seq)
+      '()
+      (let ((head (car seq)) (tail (cdr seq)))
+        (if (pred head)
+            (discard pred tail)
+            (cons head (discard pred tail))))))
