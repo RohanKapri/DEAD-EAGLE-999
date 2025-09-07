@@ -1,0 +1,56 @@
+# | Register | Usage        | Type    | Description                             |
+# | -------- | ------------ | ------- | --------------------------------------- |
+# | `$a0`    | input        | address | null-terminated input string            |
+# | `$a1`    | input/output | address | null-terminated result string (4 words) |
+# | `$t0-9`  | temporary    | any     | for temporary storage                   |
+
+.globl nucleotide_counts
+
+nucleotide_counts:
+        li $t0, 0 #A
+        li $t1, 0 #C
+        li $t2, 0 #G
+        li $t3, 0 #
+        li $t9, -1 #error
+        loop:
+                lb $t4, 0($a0)
+                
+                beqz $t4, res
+                
+                beq $t4, 65, incA
+                beq $t4, 67, incC
+                beq $t4, 71, incG
+                beq $t4, 84, incT
+
+                sw $t9, 0($a1)
+                sw $t9, 4($a1)
+                sw $t9, 8($a1)
+                sw $t9, 12($a1)
+                li $v0, 1
+                jr $ra
+
+        incA:
+                addi $t0, $t0, 1
+                addi $a0, $a0, 1    
+                j loop
+        incC:
+                addi $t1, $t1, 1
+                addi $a0, $a0, 1    
+                j loop
+        incG:
+                addi $t2, $t2, 1
+                addi $a0, $a0, 1    
+                j loop
+        incT:
+                addi $t3, $t3, 1
+                addi $a0, $a0, 1    
+                j loop
+                
+        res:
+                sw $t0, 0($a1)
+                sw $t1, 4($a1)
+                sw $t2, 8($a1)
+                sw $t3, 12($a1)
+        jr $ra
+                
+       
