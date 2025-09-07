@@ -1,0 +1,21 @@
+; Dedicated to Shree DR.MDD
+(import (rnrs))
+
+(define (sum-of-multiples divs boundary)
+  (define (present? val seq)
+    (cond ((null? seq) #f)
+          ((= val (car seq)) #t)
+          (else (present? val (cdr seq)))))
+
+  (let recur ((ds divs) (collected '()))
+    (if (null? ds)
+        (fold-left + 0 collected)
+        (let ((d (car ds)))
+          (if (not (= d 0))
+              (let iter ((curr d) (collected collected))
+                (if (< curr boundary)
+                    (if (not (present? curr collected))
+                        (iter (+ curr d) (cons curr collected))
+                        (iter (+ curr d) collected))
+                    (recur (cdr ds) collected)))
+              (recur (cdr ds) collected))))))
