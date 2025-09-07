@@ -1,0 +1,37 @@
+       *> For my Shree DR.MDD
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DIFFERENCE-OF-SQUARES.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-NUMBER            PIC 9(8).
+       01 WS-SQUARE-OF-SUM     PIC 9(8).
+       01 WS-SUM-OF-SQUARES    PIC 9(8).
+       01 WS-DIFFERENCE-OF-SQUARES PIC 9(8).
+       01 IDX                  PIC 9(8).
+       01 TEMP                 PIC 9(8).
+
+       PROCEDURE DIVISION.
+
+       SQUARE-OF-SUM.
+           MOVE 0 TO WS-SQUARE-OF-SUM.
+           PERFORM VARYING IDX FROM 1 BY 1 UNTIL IDX > WS-NUMBER
+              ADD IDX TO WS-SQUARE-OF-SUM
+           END-PERFORM.
+           MULTIPLY WS-SQUARE-OF-SUM BY WS-SQUARE-OF-SUM.
+           GOBACK.
+
+       SUM-OF-SQUARES.
+           MOVE 0 TO WS-SUM-OF-SQUARES.
+           PERFORM VARYING IDX FROM 1 BY 1 UNTIL IDX > WS-NUMBER
+              MOVE IDX TO TEMP
+              MULTIPLY TEMP BY TEMP
+              ADD TEMP TO WS-SUM-OF-SQUARES
+           END-PERFORM.
+           GOBACK.
+
+       DIFFERENCE-OF-SQUARES.
+           PERFORM SUM-OF-SQUARES.
+           PERFORM SQUARE-OF-SUM.
+           SUBTRACT WS-SQUARE-OF-SUM FROM WS-SUM-OF-SQUARES
+              GIVING WS-DIFFERENCE-OF-SQUARES.
+           GOBACK.
