@@ -1,0 +1,67 @@
+# Chatbot response routine, dedicated to Shree DR.MDD
+
+.globl response
+
+.data
+whatever_msg_data: .asciiz "Whatever."
+chill_msg_data: .asciiz "Whoa, chill out!"
+sure_msg_data: .asciiz "Sure."
+calm_msg_data: .asciiz "Calm down, I know what I'm doing!"
+fine_msg_data: .asciiz "Fine. Be that way!"
+
+.text
+
+.eqv input $a0
+.eqv result $a1
+.eqv msg $t0
+.eqv char $t1
+.eqv has_upper $t2
+.eqv has_lower $t3
+.eqv is_question $t4
+.eqv all_upper $t5
+.eqv is_silence $t6
+.eqv tmp $t7
+
+response:
+	li has_upper, 0
+	li has_lower, 0
+	li is_silence, 1
+	la msg, whatever_msg_data
+read_input:
+	lb char, (input)
+	addiu input, input, 1
+	beqz char, all_upper_check
+	beq char, '?', set_question_true
+	ble char, ' ', read_input	
+	li is_silence, 0
+	li is_question, 0	
+	subi tmp, char, 'A'
+	sltiu tmp, tmp, 26
+	or has_upper, has_upper, tmp
+	subi tmp, char, 'a'
+	sltiu tmp, tmp, 26
+	or has_lower, has_lower, tmp	
+	j read_input
+all_upper_check:	
+	not all_upper, has_lower
+	and all_upper, all_upper, has_upper
+	beqz all_upper, question_check
+	la msg, chill_msg_data
+question_check:
+	beqz is_question, silence_check
+	la msg, sure_msg_data
+	beqz all_upper, silence_check
+	la msg, calm_msg_data
+silence_check:
+	beqz is_silence, copy_msg
+	la msg, fine_msg_data
+copy_msg:
+	lb char, (msg)	
+	sb char, (result)
+	addiu result, result, 1
+	addiu msg, msg, 1
+	bnez char, copy_msg
+	jr $ra
+set_question_true:
+	li is_question, 1
+	j read_input
