@@ -1,0 +1,10 @@
+(import (rnrs))
+
+(define (attacking? white black)
+  (let ((white-x (car white))
+        (white-y (cadr white))
+        (black-x (car black))
+        (black-y (cadr black)))
+    (or (eq? white-x black-x)
+        (eq? white-y black-y)
+        (eq? (abs (- white-x black-x)) (abs (- white-y black-y))))))
