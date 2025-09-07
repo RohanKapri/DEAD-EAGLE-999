@@ -1,0 +1,82 @@
+# Proverb Reciter in MIPS Assembly
+# Implements the "For want of a nail..." proverb chain.
+# Input: $a0 -> null-terminated strings with newline after each input
+# Output: $a1 -> concatenated proverb lines
+# Uses $t0-$t9 for temporary storage
+
+.globl recite
+
+.data
+for_want: .asciiz "For want of a "
+the:      .asciiz " the "
+was_lost: .asciiz " was lost.\n"
+and_all:  .asciiz "And all for the want of a "
+stop:     .asciiz ".\n"
+
+.text
+
+recite:
+        move    $t7, $a0            # Save first string
+        li      $t8, '\n'           # newline
+        move    $t9, $ra            # save return address
+        j       next
+
+write_line:
+        la      $a2, for_want
+        jal     copy_string         # append "For want of a "
+
+        move    $a2, $t6
+        jal     copy_line           # append current string + newline
+
+        la      $a2, the
+        jal     copy_string         # append " the "
+
+        move    $a2, $a0
+        jal     copy_line           # append next string + newline
+
+        la      $a2, was_lost
+        jal     copy_string         # append " was lost.\n"
+
+next:
+        move    $t6, $a0            # current string
+
+scan:
+        lb      $t0, 0($a0)
+        addi    $a0, $a0, 1
+        bne     $t0, $t8, scan     # scan until newline
+
+        lb      $t0, 0($a0)
+        bnez    $t0, write_line    # continue if more strings
+
+write_final_line:
+        la      $a2, and_all
+        jal     copy_string         # append "And all for the want of a "
+
+        move    $a2, $t7            # append first string
+        jal     copy_line
+
+        la      $a2, stop
+        jal     copy_string         # append final "."
+
+        jr      $t9                 # return
+
+# ----------------------------------------------------------------
+# Copies a null-terminated string from $a2 to $a1
+copy_string:
+        lb      $t0, 0($a2)
+        sb      $t0, 0($a1)
+        addi    $a2, $a2, 1
+        addi    $a1, $a1, 1
+        bnez    $t0, copy_string
+        subi    $a1, $a1, 1         # adjust pointer for append
+        jr      $ra
+
+# Copies a newline-terminated line from $a2 to $a1
+copy_line:
+        lb      $t0, 0($a2)
+        sb      $t0, 0($a1)
+        addi    $a2, $a2, 1
+        addi    $a1, $a1, 1
+        bne     $t0, $t8, copy_line
+        subi    $a1, $a1, 1         # adjust pointer for append
+        jr      $ra
