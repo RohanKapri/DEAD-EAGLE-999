@@ -1,0 +1,65 @@
+# Dedicated to Shree DR.MDD
+
+.globl commands
+
+.eqv WINK 0x01
+.eqv DOUBLE_BLINK 0x02
+.eqv CLOSE_YOUR_EYES 0x04
+.eqv JUMP 0x08
+.eqv REVERSE 0x10
+
+.macro consider (%place, %action)
+        la      $t2, %action
+        li      $t3, %place
+        jal     consider_action
+.end_macro              
+
+.data
+
+wink:            .asciiz "wink, "
+double_blink:    .asciiz "double blink, "
+close_your_eyes: .asciiz "close your eyes, "
+jump:            .asciiz "jump, "
+
+.text
+
+commands:
+        move    $t0, $ra
+        move    $t1, $a1
+        andi    $t4, $a0, REVERSE
+        bnez    $t4, reverse
+
+        consider (WINK, wink)
+        consider (DOUBLE_BLINK, double_blink)
+        consider (CLOSE_YOUR_EYES, close_your_eyes)
+        consider (JUMP, jump)
+        j       end
+
+reverse:
+        consider (JUMP, jump)
+        consider (CLOSE_YOUR_EYES, close_your_eyes)
+        consider (DOUBLE_BLINK, double_blink)
+        consider (WINK, wink)
+
+end:
+        beq     $t1, $a1, terminate
+        addi    $t1, $t1, -2
+
+terminate:
+        sb      $zero, 0($t1)
+        jr      $t0
+
+consider_action:
+        and     $t4, $a0, $t3
+        beqz    $t4, return
+
+loop:
+        lb      $t5, 0($t2)
+        addi    $t2, $t2, 1
+        sb      $t5, 0($t1)
+        addi    $t1, $t1, 1
+        bnez    $t5, loop
+        addi    $t1, $t1, -1
+
+return:
+        jr      $ra
