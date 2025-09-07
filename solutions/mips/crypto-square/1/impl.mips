@@ -1,0 +1,79 @@
+.globl ciphertext
+
+ciphertext:
+        move    $v1, $ra
+        move    $t4, $a0
+        li      $t6, '0'
+        li      $t7, '9'
+        li      $t8, 'a'
+        li      $t9, 'z'
+
+        li      $t0, -1
+count_alphanumeric:
+        addi    $t0, $t0, 1
+        jal     get_input
+        bnez    $v0, count_alphanumeric
+
+        beqz    $t0, return_empty
+        move    $a0, $t4
+
+        move    $t1, $zero
+increment_columns:
+        addi    $t1, $t1, 1
+        mulu    $t3, $t1, $t1
+        blt     $t3, $t0, increment_columns
+
+        subi    $t2, $t1, 2
+increment_rows:
+        addi    $t2, $t2, 1
+        mulu    $t3, $t2, $t1
+        blt     $t3, $t0, increment_rows
+
+        add     $t3, $t3, $t1
+        subi    $t3, $t3, 1
+
+        addi    $t2, $t2, 1
+        add     $t5, $a1, $t3
+        sb      $zero, 0($t5)
+        li      $v0, ' '
+
+write_space:
+        subi    $t5, $t5, 1
+        sb      $v0, 0($t5)
+        bne     $t5, $a1, write_space
+
+next_output_column:
+        move    $t5, $a1
+        addi    $a1, $a1, 1
+        move    $t3, $zero
+
+next_output_row:
+        addi    $t3, $t3, 1
+        jal     get_input
+        sb      $v0, 0($t5)
+        subi    $t0, $t0, 1
+        beqz    $t0, return
+        add     $t5, $t5, $t2
+        blt     $t3, $t1, next_output_row
+        j       next_output_column
+
+return_empty:
+        sb      $zero, 0($a1)
+
+return:
+        jr      $v1
+
+check_input:
+        blt     $v0, $t6, get_input
+        ble     $v0, $t7, accept_input
+        ori     $v0, 0x20
+        blt     $v0, $t8, get_input
+        ble     $v0, $t9, accept_input
+
+get_input:
+        lb      $v0, 0($a0)
+        addi    $a0, $a0, 1
+        bnez    $v0, check_input
+
+accept_input:
+        jr      $ra
