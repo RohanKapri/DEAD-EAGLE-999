@@ -1,0 +1,48 @@
+.globl maximum_value
+
+.text
+
+maximum_value:
+        addi    $t0, $a3, 1
+        sll     $t0, $t0, 2
+        move    $t1, $sp
+        sub     $sp, $sp, $t0
+        move    $t2, $sp
+
+write_zero:
+        sw      $zero, 0($t2)
+        addi    $t2, $t2, 4
+        bne     $t2, $t1, write_zero
+
+        sll     $a2, $a2, 2
+        add     $a2, $a1, $a2
+        j       check_end_of_values
+
+next_value:
+        lw      $t4, 0($a0)
+        lw      $t5, 0($a1)
+        addi    $a0, $a0, 4
+        addi    $a1, $a1, 4
+        bgt     $t4, $a3, check_end_of_values
+
+        move    $t6, $t1
+        sll     $t7, $t4, 2
+        sub     $t7, $t6, $t7
+
+next_table_entry:
+        addi    $t6, $t6, -4
+        addi    $t7, $t7, -4
+        lw      $t8, 0($t7)
+        add     $t8, $t8, $t5
+        lw      $t9, 0($t6)
+        ble     $t8, $t9, no_improvement_found
+        sw      $t8, 0($t6)
+
+no_improvement_found:
+        bne     $t7, $sp, next_table_entry
+
+check_end_of_values:
+        bne     $a1, $a2, next_value
+        lw      $v0, -4($t1)
+        move    $sp, $t1
+        jr      $ra
