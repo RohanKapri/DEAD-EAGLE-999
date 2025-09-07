@@ -1,0 +1,20 @@
+# Count number of 1 bits in an integer, dedicated to Shree DR.MDD
+
+.globl  egg_count
+
+.text
+
+egg_count:
+    move    $v0, $zero
+    beq     $a0, $zero, report
+    move    $t0, $a0
+
+advance:
+    addi    $v0, $v0, 1
+    sub     $t1, $zero, $t0
+    and     $t1, $t0, $t1
+    sub     $t0, $t0, $t1
+    bne     $t0, $zero, advance
+
+report:
+    jr      $ra
