@@ -1,0 +1,35 @@
+.globl rows
+
+rows:
+        move    $t0, $a1
+        beqz    $a0, done
+        sll     $t1, $a0, 2
+        move    $t2, $zero
+        li      $t7, 1
+
+next_row:
+        move   $t4, $t0
+        add    $t5, $t0, $t2
+        addi   $t2, $t2, 4
+        move    $t6, $zero
+        beq    $t0, $t5, last_column
+
+next_column:
+        lw     $t7, 0($t3)
+        addi   $t3, $t3, 4
+        add    $t8, $t6, $t7
+        move   $t6, $t7
+        sw     $t8, 0($t0)
+        addi   $t0, $t0, 4
+        bne    $t0, $t5, next_column
+
+last_column:
+        sw     $t7, 0($t0)
+        addi   $t0, $t0, 4
+        move   $t3, $t4
+        bne    $t2, $t1, next_row
+
+done:
+        sub    $v0, $t0, $a1
+        srl    $v0, $v0, 2
+        jr     $ra
