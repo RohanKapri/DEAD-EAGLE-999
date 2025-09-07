@@ -1,0 +1,39 @@
+.globl is_valid
+
+.text
+is_valid:
+        li      $v0, 0
+        move    $t0, $zero
+        li      $t3, '-'
+        li      $t4, 'X'
+        li      $t5, '0'
+        li      $t1, 10
+loop:
+        lb      $t2, 0($a0)
+        addi    $a0, $a0, 1
+        beq     $zero, $t2, check
+        beq     $t2, $t3, loop
+        bne     $t2, $t4, notx
+        bne     $t1, 1, out
+        addi    $t0, $t0, 10
+        addi    $t1, $t1, -1
+        j       loop
+notx:
+        blt     $t2, '0', out
+        bgt     $t2, '9', out
+        sub     $t2, $t2, $t5
+sum:
+        mult    $t2, $t1
+        mflo    $t2
+        addi    $t1, $t1, -1
+        add     $t0, $t0, $t2
+        j       loop
+check:
+        bne     $t1, 0, out
+        li      $t1, 11
+        div     $t0, $t1
+        mfhi    $t1
+        bne     $t1, $zero, out
+        li      $v0, 1
+out:
+        jr      $ra
