@@ -1,0 +1,1 @@
+UPDATE "square-root" SET result = SQRT(radicand);
