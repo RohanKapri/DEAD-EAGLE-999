@@ -1,0 +1,72 @@
+# Check if the input string has properly matched brackets
+# $a0 - pointer to input string
+# $v0 - output: 1 = valid, 0 = invalid
+# $sp - stack pointer used to store open brackets
+
+.globl is_paired
+
+is_paired:
+        move    $t0, $sp          # save original stack pointer
+        j       read_char
+
+loop:
+        # Check for closing brackets
+        beq     $t1, ']', handle_close
+        beq     $t1, '}', handle_close
+        beq     $t1, ')', handle_close
+
+        # Check for opening brackets
+        beq     $t1, '[', push_open
+        beq     $t1, '{', push_open
+        beq     $t1, '(', push_open
+
+increment:
+        addi    $a0, $a0, 1       # advance input pointer
+        j       read_char
+
+push_open:
+        sub     $sp, $sp, 4       # push onto stack
+        sw      $t1, 0($sp)
+        j increment
+
+handle_close:
+        # if stack empty, invalid
+        seq     $v0, $sp, $t0
+        bnez    $v0, invalid
+
+        lw      $t2, 0($sp)       # top of stack
+        # check if brackets match
+        beq     $t2, '[', check_square
+        beq     $t2, '{', check_curly
+        beq     $t2, '(', check_paren
+        j invalid                 # unknown character
+
+check_square:
+        bne     $t1, ']', invalid
+        j pop_stack
+
+check_curly:
+        bne     $t1, '}', invalid
+        j pop_stack
+
+check_paren:
+        bne     $t1, ')', invalid
+
+pop_stack:
+        addi    $sp, $sp, 4
+        j increment
+
+read_char:
+        lb      $t1, 0($a0)
+        bnez    $t1, loop
+
+# done reading
+done:
+        seq     $v0, $sp, $t0      # valid if stack empty
+        move    $sp, $t0
+        jr      $ra
+
+invalid:
+        li      $v0, 0
+        move    $sp, $t0
+        jr      $ra
