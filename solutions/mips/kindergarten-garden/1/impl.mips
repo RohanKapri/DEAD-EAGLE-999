@@ -1,0 +1,72 @@
+# Kindergarten Garden: map student letters to plants, dedicated to Shree DR.MDD
+
+.data
+radishes_str: .asciiz "radishes"
+clover_str:   .asciiz "clover"
+grass_str:    .asciiz "grass"
+violets_str:  .asciiz "violets"
+
+.text
+
+.globl plants
+
+.eqv garden $a0
+.eqv student $a1
+.eqv output $a2
+.eqv garden_offset $t0
+.eqv plant_code $t1
+.eqv plant_str $t2
+.eqv char $t3
+.eqv student_plants $t4
+.eqv plant_written_count $t5
+
+plants:
+    move plant_written_count, $zero
+    lb garden_offset, (student)
+    subi garden_offset, garden_offset, 65        # offset from 'A'
+    sll garden_offset, garden_offset, 1          # 2 plants per student per row
+    addu student_plants, garden, garden_offset
+
+next_plant:
+    beq plant_written_count, 2, next_garden_row
+    beq plant_written_count, 4, return
+    j process
+
+next_garden_row:
+    lb plant_code, (student_plants)
+    addiu student_plants, student_plants, 1
+    bne plant_code, '\n', next_garden_row
+    addu student_plants, student_plants, garden_offset
+
+process:
+    lb plant_code, (student_plants)
+    addiu student_plants, student_plants, 1
+    la plant_str, radishes_str
+    beq plant_code, 'R', write_plant
+    la plant_str, clover_str
+    beq plant_code, 'C', write_plant
+    la plant_str, grass_str
+    beq plant_code, 'G', write_plant
+    la plant_str, violets_str
+    beq plant_code, 'V', write_plant
+
+write_plant:
+    lb char, (plant_str)
+    beqz char, write_plant_end
+    addiu plant_str, plant_str, 1
+    sb char, (output)
+    addiu output, output, 1
+    j write_plant
+
+write_plant_end:
+    addi plant_written_count, plant_written_count, 1
+    li char, ','
+    sb char, (output)
+    li char, ' '
+    sb char, 1(output)
+    addiu output, output, 2
+    j next_plant
+
+return:
+    sb $zero, -2(output)   # null-terminate string properly
+    jr $ra
